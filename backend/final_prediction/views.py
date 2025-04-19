@@ -9,6 +9,17 @@ User = get_user_model()
 
 # Set up logging
 logger = logging.getLogger(__name__)
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from final_prediction.models import FinalPrediction, UserPrediction
+from django.contrib.auth import get_user_model
+import logging
+
+User = get_user_model()
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 class FinalPredictionView(APIView):
     def post(self, request):
@@ -72,7 +83,7 @@ class FinalPredictionView(APIView):
             "Bipolar": "Mood Disorder Questionnaire (MDQ)",
             "PTSD": "Clinician-Administered PTSD Scale (CAPS-5)",
             "Eating Disorder": "Eating Disorder Examination Questionnaire (EDE-Q)",
-            "Personality Disorder": "Minnesota Multiphasic Personality Inventory (MMPI-2)",
+            "Personality Disorder": "Minnesota Multiphasic Personality Inventory (MMPI-2-RF)",
             "Psychotic Disorder": "Brief Psychiatric Rating Scale (BPRS)",
             "Substance Use": "Drug Abuse Screening Test (DAST)",
             "ADHD": "Adult ADHD Self-Report Scale (ASRS)",
@@ -80,41 +91,28 @@ class FinalPredictionView(APIView):
             "Impulse Control Disorder": "Barratt Impulsiveness Scale (BIS-11)"
         }
 
-        recommended_test = disorder_tests.get(final_prediction, "General Psychological Screening")
+        # Map final prediction to disorder test
+        disorder_test = disorder_tests.get(final_prediction, "No suitable test found")
 
-        # Save to FinalPrediction
-        final_pred = FinalPrediction.objects.create(
+        # Log the final prediction
+        logger.debug(f"Final prediction for user {user.email if hasattr(user, 'email') else user.id}: {final_prediction}")
+
+        # Save to FinalPrediction model
+        final_prediction_obj, created = FinalPrediction.objects.get_or_create(
             user=user,
-            facial_prediction=facial_prediction,
-            audio_prediction=audio_prediction,
-            text_prediction=text_prediction,
-            final_prediction=final_prediction,
-            recommended_tests=recommended_test
+            defaults={
+                'final_prediction': final_prediction,
+                'disorder_test': disorder_test
+            }
         )
 
-        # Delete UserPrediction to avoid clutter
-        user_prediction.delete()
+        if not created:
+            final_prediction_obj.final_prediction = final_prediction
+            final_prediction_obj.disorder_test = disorder_test
+            final_prediction_obj.save()
 
-        # Response message
-        message = (
-            f"Our analysis suggests you may be experiencing **{final_prediction}**.\n\n"
-            f"The recommended test is **{recommended_test}**.\n\n"
-            f"To start the test, send a POST request to /clinical_tests/start-test-from-prediction/ with the prediction_id.\n\n"
-            f"You're not alone — help is always available. Stay strong, and take one step at a time 💙"
-        )
-
-        logger.info(f"Final prediction created for user {user.email if hasattr(user, 'email') else user.id}: {final_prediction}, Recommended test: {recommended_test}")
-
+        # Return the final prediction with recommended disorder test
         return Response({
             "final_prediction": final_prediction,
-            "recommended_test": recommended_test,
-            "prediction_id": final_pred.id,
-            "message": message,
-            "clinical_test": {
-                "action": "Start clinical test",
-                "endpoint": "/clinical_tests/start-test-from-prediction/",
-                "method": "POST",
-                "payload": {"prediction_id": final_pred.id},
-                "description": "Send the payload to the endpoint to start the recommended clinical test."
-            }
+            "disorder_test": disorder_test
         }, status=status.HTTP_200_OK)

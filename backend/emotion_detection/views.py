@@ -140,7 +140,7 @@ class DetectEmotionAndPredictDisorderView(APIView):
                             frame,
                             actions=['emotion'],
                             enforce_detection=False,
-                            detector_backend='opencv',
+                            detector_backend='retinaface',
                             silent=True
                         )
                         if isinstance(result, list) and result:

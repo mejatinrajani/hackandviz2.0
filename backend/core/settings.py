@@ -35,6 +35,7 @@ FRONTEND_URL = "http://localhost:3000"
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # your React frontend URL
 ]
+CORS_ALLOW_ALL_ORIGINS = True  # for development only
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -52,7 +53,12 @@ INSTALLED_APPS = [
     'user_detail',
     'final_prediction',
     'clinical_tests',
+    'recommendations'
 ]
+# Add these at the bottom
+SPOTIFY_CLIENT_ID = '44e1d82dbf8240a8bcf2d6ef3bf032b7'
+SPOTIFY_CLIENT_SECRET = 'cd55121aea45482a8388cf03afeaed1b'
+TMDB_API_KEY = '6bac48c1f910ce67682ec817d54cc53e'
 
 AUTH_USER_MODEL = 'authuser.CustomUser'
 

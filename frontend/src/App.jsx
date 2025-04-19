@@ -1,20 +1,33 @@
-// App.jsx
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './components/LoginForm';
-import Dashboard from './components/Dashboard';
-import UserDetailForm from './components/UserDetailForm';
-const App = () => {
+import Login from './components/Login';
+import TestInterface from './components/TestInterface.jsx';
+import AssessmentTest from './components/AssesmentTest.jsx';
+import './index.css';
+
+function App() {
   return (
     <Router>
-      <Routes>
-        {/* Default route redirects to login */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/user_detail" element={<UserDetailForm />} />
-      </Routes>
+      <div className="min-h-screen bg-gray-50">
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/test-interface"
+            element={
+                <TestInterface />
+            }
+          />
+          <Route
+            path="/assessment"
+            element={
+                <AssessmentTest />
+            }
+          />
+        </Routes>
+      </div>
     </Router>
   );
-};
+}
 
 export default App;

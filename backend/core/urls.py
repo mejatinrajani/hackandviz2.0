@@ -25,4 +25,5 @@ urlpatterns = [
     path('api/user_detail/', include('user_detail.urls')),
     path("final/", include("final_prediction.urls")),
     path('clinical_tests/', include('clinical_tests.urls')),
+    path('recommendations/', include('recommendations.urls')),
 ]
